@@ -1,0 +1,111 @@
+
+import "baseMenu.del";
+void ParameterPrep() 
+{
+    paramIndex = 0;
+    currParam = argCollection[paramIndex];
+    SetupParameter(currParam);
+    stringCMD = null;
+}
+
+void SetupParameter(define input !) playervar "setup param"
+{
+    switch (input)
+    {
+        case "Player": {
+            selectedIndex = 0;
+            if (ArrayContains(["Spin Player", "Spawn Lock Player", "Communicate Player", "Set Player's Status", "Kill Player", "Clear Player's Status", "Heal Player", "Damage Player", "Set Player Ability Cooldown", "Reverse Player Controls", "Set Player Max HP", "Set Player Ultimate Charge", "Blind Player", "Jail Player", "Set Player Damage Power"], selectedCMD)) arrayCollection = Append(Append(Append(AllPlayers(), "All"), "Others"), "Regulars");
+            else if(ArrayContains(["Bring Player", "Toggle Menu Access"], selectedCMD)) arrayCollection = Append(Append(RemoveFromArray(AllPlayers(), EventPlayer()), "Others"), "Regulars");
+            else if (ArrayContains(["Puppet Player"], selectedCMD)) arrayCollection = RemoveFromArray(AllPlayers(), EventPlayer());
+            else arrayCollection = AllPlayers();
+            selectionString = <"<0> Selection for <1>", input, selectedCMD>;
+            DestroyProgressBarHudText(numSliderID);
+            numArg = " ";
+            PageSetup(arrayCollection);
+            break;
+        }
+        case "Num": {
+            selectedIndex = 0;
+            arrayCollection = null;
+            arrayCollection[0] = " ";
+            selectionString = <"Select a numerical value below">;
+            numMin = ReturnGuides()[0];
+            numMax = ReturnGuides()[1];
+            CreateProgressBarHudText(EventPlayer(),
+            (numArg / numMax) * 100, <"Select a number for <0>: <1>", selectedCMD, numArg>,
+            Location.Top,
+            5,
+            Color.Rose,
+            Color.White,
+            ProgressBarHudEvaluation.VisibleToValuesAndColor);
+            numSliderID = LastTextID();
+            numArg = numMin;
+            maxNumRate = numMax * 1.25;
+            break;
+        }
+        case "Array": {
+            selectedIndex = 0;
+            arrayCollection = ReturnGuides();
+            selectionString = <"Items Selection">;
+            DestroyProgressBarHudText(numSliderID);
+            numArg = " ";
+            PageSetup(arrayCollection);
+            break;
+        }
+        case "Bool":
+        {
+            selectedIndex = 0;
+            arrayCollection = ["On", "Off"];
+            selectionString = <"On/Off Selection">;
+            DestroyProgressBarHudText(numSliderID);
+            numArg = " ";
+            PageSetup(arrayCollection);
+            break;
+        }
+    }
+    AbortIf(!((selectedCMD == "Add Admin") || (selectedCMD == "Remove Admin")));
+    //reeval arrays
+    switch (selectedCMD)
+    {
+        case "Add Admin": {
+            if (arrayCollection == "ReevalArray1")
+                {
+                    arrayCollection = FilteredArray(AllPlayers(), ArrayElement().role == "User");
+                }
+        }
+        case "Remove Admin": {
+            if (arrayCollection == "ReevalArray1")
+                {
+                    arrayCollection = FilteredArray(AllPlayers(), ArrayElement().role == "Admin");
+                }
+        }
+    }
+    PageSetup(arrayCollection);
+}
+
+
+void NextParameter(define input !) playervar "nextParam"
+{
+    if (input == "All" || input == "Others" || input == "Regulars")
+    {
+        argCollection[paramIndex] = ReturnGroup(input);
+    }
+    else argCollection[paramIndex] = input;
+    if (currParam == "Array" || currParam == "Num")
+    {
+        paramIndex += 2;
+    }
+    else paramIndex += 1;
+   currParam = argCollection[paramIndex];
+   SetupParameter(currParam);
+}
+
+
+
+
+define ReturnParameters(define cmd !): FilteredArray(paramReturn, ArrayElement()[0] == cmd)[0][1];
+
+define ReturnGroup(define group !): [AllPlayers(), RemoveFromArray(AllPlayers(), EventPlayer()), FilteredArray(AllPlayers(), ArrayElement().role == "User")][IndexOfArrayValue(["All", "Others", "Regulars"], group)];
+define ParamComplete(define cmd !, define paramArray !): ((CountOf(FilteredArray(cmd, ArrayContains(keyWords, ArrayElement()))) == 0) &&(CountOf(FilteredArray(paramArray, ArrayContains(keyWords, ArrayElement()))) == 0) && (CountOf(ReturnParameters(cmd)) == CountOf(paramArray)));
+
+define ReturnGuides(): argCollection[paramIndex + 1];

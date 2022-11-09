@@ -1,0 +1,61 @@
+import "baseMenu.del";
+playervar define portals !;
+//[x][0] - Effect POS
+//[x][1] - Effect ID
+//[x][2] - Linked Index
+
+define PortalOpen(define portIndex !, define player !): (player.portals[portIndex][1] != null);
+define NearPortal(define player !, define portalIndex !): FilteredArray(AllPlayers(), DistanceBetween(PositionOf(player), ArrayElement().portals[portalIndex][0]) <= 1.65 && ArrayElement().portals[portalIndex][0] != null)[0];
+define PortalComplete(define player !): (player.portals[0][1] != null && player.portals[1][1] != null);
+void CreatePortal(define index !) playervar "Create Portal"
+{
+    if (PortalOpen(index, EventPlayer()))
+    {
+        portals[index][0] = PositionOf() + Vector(0, 1.35, 0);
+        Abort();
+    }
+    if (index == 0)
+    {
+        CreateEffect(AllPlayers(), Effect.GoodAura, Color.White, portals[0][0], 1.45, EffectRev.VisibleToPositionAndRadius);
+        portals[0][0] = PositionOf() + Vector(0, 1.35, 0);
+        portals[0][1] = LastCreatedEntity();
+        portals[0][2] = 1;
+    }
+    else if (index == 1)
+    {
+        CreateEffect(AllPlayers(), Effect.GoodAura, Color.Rose, portals[1][0], 1.45, EffectRev.VisibleToPositionAndRadius);
+        portals[1][0] = PositionOf() + Vector(0, 1.35, 0);
+        portals[1][1] = LastCreatedEntity();
+        portals[1][2] = 0;
+    }
+}
+
+
+void DestroyPortal(define index !, define player !) playervar "Destroy"
+{
+    if (PortalOpen(index, player))
+    {
+        player.portals[index][0] = null;
+        DestroyEffect(player.portals[index][1]);
+        player.portals[index][1] = null;
+        player.portals[index][2] = null;
+    }
+}
+
+rule: "Teleport"
+    Event.OngoingPlayer
+    if (NearPortal(EventPlayer(), 0) != null || NearPortal(EventPlayer(), 1) != null)
+    if (PortalComplete(NearPortal(EventPlayer(), 0)) || PortalComplete(NearPortal(EventPlayer(), 1)))
+    {
+        if (NearPortal(EventPlayer(), 0) != null && PortalComplete(NearPortal(EventPlayer(), 0)))
+        {
+            Teleport(EventPlayer(), NearPortal(EventPlayer(), 0).portals[1][0]);
+            PlayEffect(EventPlayer(), PlayEffect.BuffExplosionSound, Color.White, EyePosition(), 500);
+        }
+        else if(NearPortal(EventPlayer(), 1) != null && PortalComplete(NearPortal(EventPlayer(), 1)))
+        {
+            Teleport(EventPlayer(), NearPortal(EventPlayer(), 1).portals[0][0]);
+            PlayEffect(EventPlayer(), PlayEffect.BuffExplosionSound, Color.White, EyePosition(), 500);
+        }
+        Wait(1);
+    }

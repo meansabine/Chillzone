@@ -1,0 +1,69 @@
+[chillzone 1.5.1]
+{yes! its finally back! after 2 years, i can gladly say i've done some work on chillzone and upgraded it for OW 2. we will what is in store for the future - also we have reached 70 COMMANDS! YAY}
+
+Changelog - 10/21/2022
+
+- Fixed a bug where backend Command Attributes would behave incorrectly.
+- Fixing Jail Player, Blind Player, and Set Voice Pitch.
+- Changed menu color and name to reflect my new name!
+- Changed controls a bit, and made the menu reflect that.
+- Made number slider much more obvious, and added a visual cue for min and max!
+- Removed the ability to execute commands via Admin Orb - felt underused and was heft on backend
+- Added new commands(including a secret one that is map specific)
+- Temporarily disabled Watch Player, which would crash the server.
+- Fixed the jumppad, and added some new effects to it. Temporarily disabled spring animation.
+- Number slider adjusted to be faster, see below for indepth.
+- "Coord Display" - Creates a HUD to display your coords [On/Off]
+- "Super Punch" - Ever wanted to deck someone flying? Try this! [On/Off]
+- "Instant Resurrection" - Resurrect automatically when you die [On/Off]
+- "No Cooldowns" - Turn off cooldowns for self [On/Off]
+- "Server Load HUD" - Displays server load for self [On/Off]
+- "Puppet Player" - Allows limited control over a player (heavy server load) [On/Off]
+- "One Shot One Kill" - Need I say more? [On/Off]
+
+
+
+
+Backend BS
+
+- Started transition towards a fully Attribute variable system instead of declaring variables per command.
+- Started multiple new commands!
+- Changed how controls are displayed.
+- Changed how number slider accelerates; instead of a fixed 800 max, it is now capped at the max of the number arg max * 1.25.
+
+
+Comment on stability:
+Chillzone currently is pretty server load intensive when multiple people are using the menu, which can easily lead to server crashes. As of right now, I am working on updates to help reduce the impact on server load so that the menu is more efficient. I'd say right now its cut out to handle max 8 players, but you could always try more!
+
+
+8JFDR
+
+
+
+[chillzone 1.5.1a] - stability updates
+
+{with CZ 1.5.0, it seems that it didn't take well to OW2 well(at all), and decided to crash the server any time it could get!
+but now i got to take a look and see where things might be going wrong and how it directly affects the performance of the server!
+and i found a couple parts that were causing enormous(HUGE) problems in server stability. there will be small
+and almost not noticable changes coming to the menu that will help relieve a decent amount of the load. with that being said,
+there are chances that bugs may arise since there are big back end changes. please tell me on discord(sabine#0320) if you
+run into anything out of the ordinary. this update should help with server stability though!}
+
+- Made changes to internal bool system to help reduce heft on server load(rainbow....)
+- Made changes to opening, closing, and recursing menu on backend
+- Now has a time between page changes(very tiny but needed)
+- Many many many more back end changes
+
+
+[chillzone 1.5.2] - ZIPLINES & comment on stability
+
+{with CZ 1.5.1, stability was improved but not completely. CZ can right now support 7 people or less,
+increase at your own risk. more updates are underway to improve stability. please tell me on discord(sabine#0320) if you
+run into anything out of the ordinary. this update should help with server stability though!}
+
+- INTRODUCING ZIPLINES! Players can now create their own personal Zip Lines using the new Zip Line Creator Mode command(max 10 ziplines)
+- Added new commands
+- "Fixed Camera" - Fixes the camera to be stuck in one location [On/Off]
+- "Zipline Creation Mode" - Enables the Zipline Creation Mode [On/Off]
+- "Destroy All Personal Ziplines" - Removes all of your personal ziplines
+- Temporarily disabled "Communicate Player" as this is currently bugged in the OW2 workshop.

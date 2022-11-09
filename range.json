@@ -1,0 +1,10 @@
+
+
+{
+    "Modes": {
+        "Practice Range": {
+            "Enabled": true,
+			"Enabled Maps": ["Practice Range"]
+        }
+    }
+}

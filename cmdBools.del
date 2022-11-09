@@ -1,0 +1,378 @@
+import "baseMenu.del";
+
+playervar define boolArray; //personal bools
+//[0] = cmd names
+//[1] = boolean value
+//[2] = string value
+
+
+
+
+
+playervar define menuAccessible !;
+
+
+
+playervar define noclipPos;
+
+playervar define rainbowEnts !;
+globalvar define rainbowAni;
+globalvar define rainbowDest;
+globalvar define standardAngle;
+
+globalvar define pauseMatchTime !;
+
+playervar define coordDisplayHud !;
+
+rule: "Pause Time"
+    Event.OngoingGlobal
+    if (pauseMatchTime)
+    {
+        PauseMatchTime();
+    }
+
+rule: "UnPause Time"
+    Event.OngoingGlobal
+    if (!pauseMatchTime)
+    {
+        UnpauseMatchTime();
+    }
+
+
+
+
+
+
+
+rule: "Instant Ult"
+    Event.OngoingPlayer
+    if (ReturnBool("Instant Ultimate", EventPlayer()))
+    if (UltimateChargePercent(EventPlayer()) != 100)
+    if (!menuOpen)
+    {
+        SetUltimateCharge(EventPlayer(), 100);
+        Wait(0.75);
+        LoopIfConditionIsTrue();
+    }
+
+rule: "Bunny Jumps"
+    Event.OngoingPlayer
+    if (ReturnBool("Bunny Jumps", EventPlayer()))
+    if (IsOnGround())
+    {
+        ApplyImpulse(EventPlayer(), Up(), RandomInteger(10, 18), Relative.ToWorld, ContraryMotion.Incorporate);
+    }
+
+rule: "Double Jump"
+    Event.OngoingPlayer
+    if (ReturnBool("Infinite Jump", EventPlayer()))
+    if (IsButtonHeld(EventPlayer(), Button.Jump))
+    {
+        ApplyImpulse(EventPlayer(), Up(), 10, Relative.ToWorld, ContraryMotion.Cancel);
+        Wait(0.16);
+        LoopIfConditionIsTrue();
+    }
+
+
+
+rule: "Spam Abilities Active"
+    Event.OngoingPlayer
+    if (ArrayContains([Hero.Ana, Hero.Cassidy], HeroOf(EventPlayer())))
+    if (ReturnBool("Spam Abilities", EventPlayer()))
+    if (!menuOpen)
+    if (IsButtonHeld(EventPlayer(), Button.Ability1))
+    {
+        SetAbility1Enabled(EventPlayer(), false);
+        SetAbilityCooldown(EventPlayer(), Button.Ability2, 0);
+        CancelPrimaryAction(EventPlayer());
+        Wait(0.017);
+        PressButton(EventPlayer(), Button.Ability2);
+        LoopIfConditionIsTrue();
+        SetAbility1Enabled(EventPlayer(), true);
+    }
+
+rule: "Spam Abilities Active"
+    Event.OngoingPlayer
+    if (ReturnBool("Spam Abilities", EventPlayer()))
+    if (!menuOpen)
+    if (IsButtonHeld(EventPlayer(), Button.Reload))
+    {
+        SetAbilityCooldown(EventPlayer(), Button.Melee, 0);
+        CancelPrimaryAction(EventPlayer());
+        PressButton(EventPlayer(), Button.Melee);
+        Wait(0.032);
+        LoopIfConditionIsTrue();
+    }
+
+
+
+
+
+rule: "Aimbot Lock On"
+    Event.OngoingPlayer
+    if (ReturnBool("Aimbot", EventPlayer()))
+    if (IsButtonHeld(EventPlayer(), Button.Ability2))
+    if (!menuOpen)
+    {
+        StartFacing(EventPlayer(), DirectionTowards(EyePosition(EventPlayer()), EyePosition(PlayerClosestToReticle(EventPlayer(), OppositeTeamOf(TeamOf(EventPlayer()))))), 10000, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+    }
+
+
+rule: "Aimbot Lock Off"
+    Event.OngoingPlayer
+    if (!ReturnBool("Aimbot", EventPlayer()) || menuOpen || !IsButtonHeld(EventPlayer(), Button.Ability2))
+    {
+        StopFacing(EventPlayer());
+    }
+
+rule: "Teleport Shoot"
+    Event.OngoingPlayer
+    if (ReturnBool("Teleport Shoot", EventPlayer()))
+    if (IsFiringPrimary(EventPlayer()))
+    {
+        Teleport(EventPlayer(), LookingAtPos(AllPlayers(), EventPlayer(), 1000));
+        Wait(0.1);
+        LoopIfConditionIsTrue();
+    }
+
+
+
+
+
+
+
+
+
+rule: "Super Punch"
+    Event.OnDamageDealt
+    if (ReturnBool("Super Punch", EventPlayer()))
+    if (EventAbility() == Button.Melee)
+    {
+        ApplyImpulse(Victim(), FacingDirectionOf(), RetrieveAttribute("Super Punch", EventPlayer(), "Knockback1"), Relative.ToWorld, ContraryMotion.Cancel);
+    }
+
+
+rule: "No Cooldowns"
+    Event.OngoingPlayer
+    if (ReturnBool("No Cooldowns", EventPlayer()))
+    if (AbilityCooldown(EventPlayer(), Button.Ability1) != 0 || AbilityCooldown(EventPlayer(), Button.Ability2) != 0 || AbilityCooldown(EventPlayer(), Button.SecondaryFire) != 0)
+    {
+        SetAbilityCooldown(EventPlayer(), Button.Ability1, 0);
+        SetAbilityCooldown(EventPlayer(), Button.Ability2, 0);
+        SetAbilityCooldown(EventPlayer(), Button.SecondaryFire, 0);
+    }
+
+rule: "Res"
+    Event.OnDeath
+    if (ReturnBool("Instant Resurrection", EventPlayer()))
+    {
+        Teleport(EventPlayer(), NearestWalkablePosition(PositionOf()));
+        SmallMessage(EventPlayer(), <"HEROES NEVER DIE!">);
+        PlayEffect(AllPlayers(), PlayEffect.GoodExplosion, Color.White, PositionOf(EventPlayer()), 3);
+        PlayEffect(AllPlayers(), PlayEffect.BuffImpactSound, Color.White, PositionOf(EventPlayer()), 5);
+        Resurrect(EventPlayer());
+    }
+
+
+rule: "Puppet Jump"
+    Event.OngoingPlayer
+    if (IsButtonHeld(EventPlayer(), Button.Jump))
+    if (ReturnBool("Puppet Player", EventPlayer()))
+    {
+        PressButton(RetrieveAttribute("Puppet Player", EventPlayer(), "Puppet1"), Button.Jump);
+    }
+
+rule: "OSOK"
+    Event.OnDamageDealt
+    if (ReturnBool("One Shot One Kill", EventPlayer()))
+    {
+        Kill(Victim(), EventPlayer());
+    }
+
+
+
+rule: "Loops Start"
+    Event.OngoingGlobal
+    {
+        ChaseVariableAtRate(rainbowAni, rainbowDest, 0.75, RateChaseReevaluation.DestinationAndRate);
+        rainbowDest = 0.4;
+    }
+
+
+
+
+rule: "Loop Rainbow"
+    Event.OngoingGlobal
+    if (rainbowAni == 1)
+    {
+        rainbowDest = 0.40;
+    }
+
+rule: "Loop Rainbow"
+    Event.OngoingGlobal
+    if (rainbowAni == 0.4)
+    {
+        rainbowDest = 1;
+    }
+
+
+
+
+
+define ReturnBool(define cmd !, define player !): FilteredArray(player.boolArray, ArrayElement()[0] == cmd)[0][1];
+define ReturnToggleString(define cmd !, define player !): FilteredArray(player.boolArray, ArrayElement()[0] == cmd)[0][2];
+void SwitchToggle(define cmd !, define bool !)
+{
+    boolArray[IndexOfArrayValue(toggableCommands, cmd)][1] = bool;
+    if (bool == true)
+    {
+        OnToggle(cmd);
+    }
+    else if (bool == false)
+    {
+        OffToggle(cmd);
+    }
+}
+playervar define fixedCam !;
+void OnToggle(define cmd !) playervar "OnToggle"
+{
+    switch (cmd)
+    {
+        case "Noclip": {
+        noclipPos = PositionOf();
+        StartForcingPlayerPosition(EventPlayer(), noclipPos, true);
+        ChaseVariableAtRate(noclipPos, noclipPos + Up() * IsButtonHeld(EventPlayer(), Button.Jump) + Down() * IsButtonHeld(EventPlayer(), Button.Crouch) + WorldVectorOf(Vector(XOf(ThrottleOf()), ZOf(ThrottleOf()) * SineFromDegrees(null - VerticalFacingAngleOf()), ZOf(ThrottleOf()) * CosineFromDegrees(VerticalFacingAngleOf())), EventPlayer(), LocalVector.Rotation), 10 * IsButtonHeld(EventPlayer(), Button.Ability1) + 10 * Min(true, (IsButtonHeld(EventPlayer(), Button.Jump) || IsButtonHeld(EventPlayer(), Button.Crouch)) + SquareRoot(DotProduct(ThrottleOf(EventPlayer()), ThrottleOf(EventPlayer())))), RateChaseReevaluation.DestinationAndRate);
+        } break;
+        case "Invisible": {
+            SetInvisible(EventPlayer(), InvisibleTo.All);
+        } break;
+        case "Invincibility": {
+            SetStatus(EventPlayer(), null, Status.Invincible, 9999);
+        } break;
+        case "Console": {
+            consoleViewers = Append(consoleViewers, EventPlayer());
+        } break;
+        case "Rainbow": {
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Purple, EventPlayer(), (rainbowAni - 0.05) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[0] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Blue, EventPlayer(), (rainbowAni - 0.1) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[1] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Aqua, EventPlayer(), (rainbowAni - 0.15) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[2] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.LimeGreen, EventPlayer(), (rainbowAni - 0.2) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[3] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Green, EventPlayer(), (rainbowAni - 0.25) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[4] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Yellow, EventPlayer(), (rainbowAni - 0.3) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[5] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Orange, EventPlayer(), (rainbowAni - 0.35) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[6] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Red, EventPlayer(), (rainbowAni - 0.4) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[7] = LastCreatedEntity();
+            Wait(0.2);
+            CreateEffect(AllPlayers(), Effect.Ring, Color.Purple, EventPlayer(), (rainbowAni - 0.45) * scalar, EffectRev.VisibleToPositionAndRadius);
+            rainbowEnts[8] = LastCreatedEntity();
+            Wait(0.2);
+        } break;
+        case "Thirdperson": {
+            StartCamera(EventPlayer(), ThirdpersonPos(EventPlayer()), ThirdpersonLook(EventPlayer()), 0);
+        } break;
+        case "Ghost": {
+            DisableMovementCollisionWithEnvironment(EventPlayer());
+        } break;
+        case "Puppet Player": {
+            SetAttribute("Puppet Player", EventPlayer(), "Puppet1", argCollection[1]);
+            SetStatus(EventPlayer(), null, Status.PhasedOut, 9999);
+            SetInvisible(EventPlayer(), InvisibleTo.All);
+            StartForcingPlayerPosition(EventPlayer(), PositionOf(RetrieveAttribute("Puppet Player", EventPlayer(), "Puppet1")), true);
+            StartFacing(RetrieveAttribute("Puppet Player", EventPlayer(), "Puppet1"), FacingDirectionOf(EventPlayer()), 1000, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+            StartThrottleInDirection(RetrieveAttribute("Puppet Player", EventPlayer(), "Puppet1"), ThrottleOf(EventPlayer()), 100, Relative.ToPlayer, ThrottleBehavior.ReplaceExistingThrottle, ThrottleRev.DirectionAndMagnitude);
+            SetMoveSpeed(EventPlayer(), 1);
+        } break;
+        case "Server Load HUD": {
+            CreateHudText(EventPlayer(),
+            null,
+            <"Server Load: <0>", ServerLoad()>,
+            <"Average Server Load: <0> \nServer Load Peak: <1>", ServerLoadAverage(), ServerLoadPeak()>,
+            Location.Left,
+            0,
+            Color.White,
+            ServerLoad() > 150 ? Color.Red : Color.White,
+            ServerLoadAverage() > 125 || ServerLoadPeak() > 135? Color.Red : Color.White,
+            HudTextRev.VisibleToSortOrderStringAndColor);
+            SetAttribute("Server Load HUD", EventPlayer(), "Hud1", LastTextID());
+        } break;
+        case "Coord Display": {
+            CreateHudText(EventPlayer(),
+            null,
+            RaycastingPos(null, EventPlayer(), 500, EyePosition()),
+            PositionOf(),
+            Location.Left,
+            5,
+            Color.White,
+            Color.White,
+            Color.Rose,
+            HudTextRev.VisibleToAndString);
+            coordDisplayHud = LastTextID();
+        } break;
+        case "Fixed Camera": {
+            fixedCam[0] = RaycastingPos(AllPlayers(), EventPlayer(), 50, EyePosition());
+            fixedCam[1] = EyePosition();
+            StartCamera(EventPlayer(), fixedCam[1], fixedCam[0], 1000);
+        } break;
+    }
+}
+
+void OffToggle(define cmd !) playervar "Off Toggle"
+{
+    switch (cmd)
+    {
+        case "Noclip": {
+            StopChasingVariable(noclipPos);
+            StopForcingPlayerPosition(EventPlayer());
+        } break;
+        case "Invisible": {
+            SetInvisible(EventPlayer(), InvisibleTo.None);
+        } break;
+        case "Invincibility": {
+            ClearStatus(EventPlayer(), Status.Invincible);
+        } break;
+        case "Console": {
+            consoleViewers = RemoveFromArray(consoleViewers, EventPlayer());
+        } break;
+        case "Rainbow": {
+            foreach (define i in rainbowEnts)
+            {
+                DestroyEffect(i);
+                Wait(0.2);
+            }
+        } break;
+        case "Thirdperson": 
+        {
+            StopCamera();
+        } break;
+        case "Ghost": {
+            EnableMovementCollisionWithEnvironment(EventPlayer());
+        } break;
+        case "Puppet Player": {
+            StopFacing(RetrieveAttribute("Puppet Player", EventPlayer(), "Puppet1"));
+            StopThrottleInDirection(RetrieveAttribute("Puppet Player", EventPlayer(), "Puppet1"));
+            SetMoveSpeed(EventPlayer(), 100);
+            ClearStatus(EventPlayer(), Status.PhasedOut);
+            SetInvisible(EventPlayer(), InvisibleTo.None);
+            StopForcingPlayerPosition(EventPlayer());
+        } break;
+        case "Server Load HUD": {
+            DestroyHudText(RetrieveAttribute("Server Load HUD", EventPlayer(), "Hud1"));
+        } break;
+        case "Coord Display": DestroyHudText(coordDisplayHud); break;
+        case "Fixed Camera": StopCamera(); break;
+    }
+}

@@ -1,0 +1,22 @@
+import "baseMenu.del";
+playervar define cmdAttributes !;
+//[x][0] - CMD
+//[x][z] - String Pointer
+//[x][z + 1] - Attribute
+
+rule: "Build Attributes"
+    Event.OngoingPlayer
+    if (modelAttributeArray != null)
+    if (cmdAttributes == null)
+    {
+        cmdAttributes = modelAttributeArray;
+    }
+
+define RetrieveAttribute(define cmd !, define player !, define attribute !): player.cmdAttributes[IndexOfArrayValue(modelAttributeOrder, cmd)][IndexOfArrayValue(player.cmdAttributes[IndexOfArrayValue(modelAttributeOrder, cmd)], attribute) + 1];
+
+void SetAttribute(define cmd !, define player !, define attribute !, define value !)
+{
+    // if (player.cmdAttributes[IndexOfArrayValue(modelAttributeArray, cmd)][IndexOfArrayValue(player.cmdAttributes[IndexOfArrayValue(modelAttributeArray, cmd)], attribute)] == null) Abort();
+    player.cmdAttributes[IndexOfArrayValue(modelAttributeOrder, cmd)][IndexOfArrayValue(player.cmdAttributes[IndexOfArrayValue(modelAttributeOrder, cmd)], attribute) + 1] = value;
+}
+

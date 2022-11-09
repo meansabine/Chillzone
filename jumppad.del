@@ -1,0 +1,47 @@
+import "pseudoChase.del";
+playervar define jumpPad !;
+//[0] - Position
+//[1] - Entity
+//[2] - Entity two
+//[3] - Position two
+playervar define storedPlayer !;
+
+define JumpPadExists(define player !): (player.jumpPad[1] != null);
+define NearPad(define player !): (CountOf(FilteredArray(AllPlayers(), DistanceBetween(ArrayElement().jumpPad[0], PositionOf(player)) <= 2.5 && ArrayElement().jumpPad[1] != null)) != 0);
+Player NearestOwnedPad(define player !): FilteredArray(AllPlayers(), DistanceBetween(ArrayElement().jumpPad[0], PositionOf(player)) <= 2.5 && ArrayElement().jumpPad[1] != null)[0];
+
+
+void CreatePad()
+{
+    if (jumpPad[1] != null)
+    {
+        jumpPad[0] = PositionOf();
+        jumpPad[3] = jumpPad[0] - Vector(0, 2, 0);
+        Abort();
+    }
+    CreateEffect(AllPlayers(), Effect.Ring, Color.White, jumpPad[0], 2.5, EffectRev.VisibleToPositionAndRadius);
+    jumpPad[1] = LastCreatedEntity();
+    CreateEffect(AllPlayers(), Effect.Sphere, Color.Rose, jumpPad[3], 2.5, EffectRev.VisibleToPositionAndRadius);
+    jumpPad[2] = LastCreatedEntity();
+    jumpPad[0] = PositionOf(EventPlayer());
+    jumpPad[3] = jumpPad[0] - Vector(0, 1.85, 0);
+}
+
+void DestroyPad()
+{
+    jumpPad[0] = null;
+    DestroyEffect(jumpPad[1]);
+    jumpPad[1] = null;
+    jumpPad[3] = null;
+    DestroyEffect(jumpPad[2]);
+    jumpPad[2] = null;
+}
+
+rule: "Near Pad"
+    Event.OngoingPlayer
+    if (NearPad(EventPlayer()))
+    {
+        ApplyImpulse(EventPlayer(), Up(), RandomInteger(20, 35), Relative.ToWorld, ContraryMotion.Incorporate);
+        Wait(0.25);
+        LoopIfConditionIsTrue();
+    }

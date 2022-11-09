@@ -1,0 +1,136 @@
+import "baseMenu.del";
+playervar define startExec;
+
+rule: "oveeerride"
+    Event.OngoingPlayer
+    if (startExec[0])
+    {
+        while (isExecuting)
+        {
+            Wait(0.016);
+        }
+        execList = null;
+        execList[0] = startExec[1];
+        BeginExecution();
+        startExec[0] = false;
+    }
+
+
+void BeginExecution() playervar "Execute Commands"
+{
+    isExecuting = true;
+    for (define i = 0; i < CountOf(execList); i++) // OR for (define i = 0; CountOf(AllPlayers()); 1)
+            {
+                argCollection = execList[i][1];
+                ExecuteCMD(execList[i][0], EventPlayer());
+                ConsoleLog(execList[i][2], "CMD", EventPlayer());
+                Wait(0.016);
+            }
+    Wait(0.12);
+    ClearParams(); //resets parameter or even menu depending
+    isExecuting = false;
+}
+
+void ExecuteCMD(define cmd !, define player !) playervar "Execute CMD"
+{
+    SmallMessage(player, <"<0> executed!", cmd>);
+    ConsoleLog(player.stringCMD, "CMD", player);
+    Wait(0.016);
+    if (ArrayContains(toggableCommands, cmd))
+    {
+        SwitchToggle(cmd, StringToBool(player.argCollection[0]));
+    }
+    if (ArrayContains(statusCommands, cmd))
+    {
+        SwitchStatus(cmd, player.argCollection[0], StringToBool(player.argCollection[1]));
+    }
+    switch (cmd)
+    {
+        case "Teleport To": Teleport(player, PositionOf(argCollection[0])); break;
+        case "Kill Self": Kill(player, player); break;
+        case "Set Speed": SetMoveSpeed(player, argCollection[0]); break;
+        case "Set Player's Status": StatusSet([argCollection[0], argCollection[1], argCollection[3]]); break;
+        case "Select Hero": ForcePlayerHero(player, argCollection[0]); StopForcingHero(player); break;
+        case "Add Admin": SetRole(argCollection[0], "Admin"); break;
+        case "Remove Admin": SetRole(argCollection[0], "User"); break;
+        case "Respawn": Respawn(player); break;
+        case "Set Projectile Speed": SetProjectileSpeed(player, argCollection[0]); break;
+        case "Teleport Outside Map": Teleport(player, PositionOf(player) + Vector(0, 175, 0)); break;
+        case "Set Gravity": SetGravity(player, argCollection[0]); break;
+        case "Set Self Status": StatusSet([player, argCollection[0], argCollection[2]]); break;
+        case "Set Projectile Gravity": SetProjectileGravity(player, argCollection[0]); break;
+        case "Clear Self Status": PlayerStatusClear(argCollection[0], player); break;
+        case "Kill Player": ClearStatus(argCollection[0], Status.Invincible); SetDamageReceived(argCollection[0], 100); Kill(argCollection[0], player); break;
+        case "Bring Player": Teleport(argCollection[0], PositionOf(player)); break;
+        case "Clear Player's Status": PlayerStatusClear(argCollection[1], argCollection[0]); break;
+        case "Toggle Menu Access": argCollection[0].menuAccessible = StringToBool(argCollection[1]); break;
+        case "Explode Player": ClearStatus(argCollection[0], Status.Invincible); SetDamageReceived(argCollection[0], 100); Kill(argCollection[0], player); PlayEffect(AllPlayers(), PlayEffect.BadExplosion, Color.Red, PositionOf(argCollection[0]), 3.5); break;
+        case "Set Player Damage Power": SetDamageDealt(argCollection[0], argCollection[1]); break;
+        case "Set Player Ultimate Charge": SetUltimateCharge(argCollection[0], argCollection[1]); break;
+        case "Set Player Max HP": SetMaxHealth(argCollection[0], argCollection[1]); break;
+        case "Damage Player": Damage(argCollection[0], player, argCollection[1]); break;
+        case "Heal Player": Heal(argCollection[0], player, argCollection[1]); break;
+        case "Set Player Ability Cooldown": SetAbilityCooldown(argCollection[0], ReturnButton(argCollection[1]), argCollection[3]); break;
+        case "Communicate Player": PlyCommunicate(argCollection[0], argCollection[1]); break;
+        case "Force Command": argCollection[0].startExec[1] = [argCollection[1], ArraySlice(argCollection, 3, CountOf(argCollection))]; argCollection[0].startExec[0] = true; break;
+        case "Poison Player": StopDamageOverTime(argCollection[0].poisonID); StartDamageOverTime(argCollection[0], player, 10000, argCollection[1]); argCollection[0].poisonID = LastDamageOverTime(); break;
+        case "Set Player Aim Speed": SetAimSpeed(argCollection[0], argCollection[1]); break;
+        case "Set Match Time": SetMatchTime(argCollection[0]); break;
+        case "Match Time Paused": pauseMatchTime = argCollection[0]; break;
+        case "Time Bend": SetSlowMotion(argCollection[0]); break;
+        case "Portal": if (argCollection[0] == "Destroy Portals")
+        {
+            DestroyPortal(0, EventPlayer());
+            DestroyPortal(1, EventPlayer());
+        }
+        else
+        {
+            CreatePortal(PortalToIndex(argCollection[0]));
+        } break;
+        case "Set Character Voice Pitch": SetAttribute("Set Character Voice Pitch", EventPlayer(), "Num1", argCollection[0] / 100); break;
+        case "Resize Shield": StartScalingBarriers(EventPlayer(), argCollection[0] / 100, false); break;
+        case "Add Health Pools": HealthPoolParse(argCollection[0], argCollection[2]); break;
+        case "Remove All Health Pools": RemoveAllHealthPoolsFromPlayer(EventPlayer()); break;
+        case "Set Jump Vertical Power": SetJumpVerticalSpeed(EventPlayer(), argCollection[0]); break;
+        case "Set Self Health": SetPlayerHealth(EventPlayer(), argCollection[0]); break;
+        case "Set Player Health": SetPlayerHealth(argCollection[0], argCollection[2]); break;
+        case "Jump Pad": if (argCollection[0] == "Create/Place Jump Pad")
+        {
+            CreatePad();
+        }
+        else
+        {
+            DestroyPad();
+        } break;
+        case "BEACH": Teleport(EventPlayer(), Vector(-33.88, -4.42, 102.27)); break;
+        case "Super Punch": SetAttribute("Super Punch", EventPlayer(), "Knockback1", argCollection[1]); break;
+        case "Destroy All Personal Ziplines": DestroyZiplines(); break;
+    }
+}
+
+
+rule: "Resize Scale"
+    Event.OngoingPlayer
+    if (selectedCMD == "Resize Self")
+        {
+            StartScalingPlayer(EventPlayer(), scalar, true);
+            ChaseVariableAtRate(scalar, numArg / 100, 500, RateChaseReevaluation.DestinationAndRate);
+        }
+
+rule: "Fix Scalar"
+    Event.OngoingPlayer
+    if (scalar >= 1.2)
+    {
+        DisableMovementCollisionWithEnvironment(EventPlayer(), false);
+    }
+
+rule: "Fix Scalar"
+    Event.OngoingPlayer
+    if (scalar <= 1)
+    {
+        EnableMovementCollisionWithEnvironment(EventPlayer());
+    }
+
+
+define StringToBool(define string !): ["On", 1, "Off", 0][IndexOfArrayValue(["On", 1, "Off", 0], string) + 1];
+define PortalToIndex(define string !): ["Portal 1", 0, "Portal 2", 1][IndexOfArrayValue(["Portal 1", 0, "Portal 2", 1], string) + 1];

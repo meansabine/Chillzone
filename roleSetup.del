@@ -1,0 +1,28 @@
+globalvar define userCMDS;
+globalvar define adminCMDS;
+globalvar define ownerCMDS;
+
+void UserSetup(define player !) playervar "[User CMDS]"
+{
+    player.allowedCMDS = userCMDS;
+
+}
+
+void AdminSetup(define player !) playervar "[Admin CMDS]"
+{
+    player.allowedCMDS = Append(player.allowedCMDS, adminCMDS);
+}
+
+void OwnerSetup(define player !) playervar "[Owner CMDS]"
+{
+    player.allowedCMDS = Append(player.allowedCMDS, ownerCMDS);
+}
+
+rule: "Prep User CMDs"
+    Event.OngoingPlayer
+    if (role == "User")
+    if (userCMDS == null)
+    {
+        Wait(1);
+        userCMDS = allowedCMDS;
+    }

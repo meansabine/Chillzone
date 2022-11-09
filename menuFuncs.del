@@ -1,0 +1,164 @@
+
+import "baseMenu.del";
+playervar define pastPageInfo;
+//[0] - Page
+//[1] - CMD
+playervar define pastNumInfo !;
+define ReturnDesc(define cmd !): FilteredArray(explanationReturn, ArrayElement()[0] == cmd)[0][1];
+define LookingAtPos(define accept, define exclude, define rangeLims): RayCastHitPosition(EyePosition(), Destination(EyePosition(), FacingDirectionOf(), rangeLims), accept, exclude, false);
+define ReplaceInArray(define array, define replacedValue, define newValue): InsertValueInArray(RemoveFromArray(array, replacedValue), IndexOfArrayValue(array,replacedValue), newValue);
+
+void StoreCommand() playervar "Store Command"
+{
+    if (CountOf(argCollection) == 0)
+    {
+        stringCMD = selectedCMD;
+    }
+    if (execList[0][0] == null)
+    {
+        execList[0][0] = selectedCMD;
+        execList[0][1] = argCollection;
+        execList[0][2] = stringCMD;
+    }
+    else
+    {
+        execList[CountOf(execList)] = [selectedCMD, argCollection, stringCMD];
+    }
+}
+
+void ConsoleLog(define string !, define prefix !, define player !) playervar "Log Console"
+{
+    consoleString = <"<0> \n <1>", <"<<0>>   <1>: <2>", MatchTime() / 60, <"<0>(<1>)", prefix, player>, string>, consoleString>;
+}
+
+void InputHandler(define input !) 
+{
+    if (selectedCMD == null)
+    {
+        if (ArrayContains(allowedCMDS, input))
+        {
+            selectedCMD = input;
+            if (CountOf(ReturnParameters(selectedCMD)) == 0)
+            {
+                ExecuteCMD(selectedCMD, EventPlayer());
+                ClearParams();
+            }
+            else
+            {
+                argCollection = ReturnParameters(selectedCMD);
+                ParameterPrep();
+                stringCMD = selectedCMD;
+            }
+            Abort();
+        }
+        else Abort();
+    }
+    else if (selectedCMD != null)
+    {
+        if (!ParamComplete(selectedCMD, argCollection))
+        {
+            if (currParam == "Num")
+            {
+                stringCMD = <"<0> <1>",stringCMD, numArg>;
+                NextParameter(numArg);
+            }
+            else
+            {
+                stringCMD = <"<0> <1>",stringCMD, input>;
+                NextParameter(input);
+            }
+        }
+    }
+}
+
+void ResetMenu(define player !) //hard resets menu back to 0 and updates CMDS
+{
+    if (player.selectedCMD == null)
+    {
+        player.pastPageInfo[0] = player.pageIndex;
+    }
+    StopChasingVariable(player.scalar);
+    player.selectedIndex = 0;
+    player.selectedCMD = null;
+    player.selectionString = <"Select a command">;
+    player.stringCMD = <"No command selected">;
+    Wait(0.08);
+    player.paramIndex = null;
+    player.numMin = 0;
+    player.numMax = 0;
+    player.numArg = 0;
+    player.tempStrings[1] = " ";
+    player.currParam = null;
+    player.numArg = " ";
+    Wait(0.08);
+    player.argCollection = null;
+    player.arrayCollection = player.allowedCMDS;
+    player.refresh = true;
+    DestroyProgressBarHudText(player.numSliderID);
+}
+playervar define refresh;
+
+rule: "Refresh Page"
+    Event.OngoingPlayer
+    if (refresh)
+    {
+        PageSetup(arrayCollection);
+        refresh = false;
+        if (pastPageInfo[0] <= CountOf(pageCollection) - 1)
+        {
+            currPage = pageCollection[pastPageInfo[0]];
+            pageIndex = pastPageInfo[0];
+        }
+        Wait(0.1);
+        LoopIfConditionIsTrue();
+    }
+
+void ClearParams() playervar "clear params" //Allows player to continue using a command after they have finished executing
+{
+    DestroyProgressBarHudText(numSliderID);
+    paramIndex = null;
+    numMin = 0;
+    numMax = 0;
+    currParam = null;
+    argCollection = null;
+    pastNumInfo = numArg;
+    if (CountOf(ReturnParameters(selectedCMD)) == 0)
+    {
+        selectedCMD = null;
+        stringCMD = <"No command selected">;
+        arrayCollection = allowedCMDS;
+    }
+    else
+    {
+        argCollection = ReturnParameters(selectedCMD);
+        ParameterPrep();
+        stringCMD = selectedCMD;
+        numArg = pastNumInfo;
+    }
+}
+
+
+
+
+
+rule: "Update Command Desc"
+    Event.OngoingPlayer
+    if (menuOpen)
+    if (selectedCMD == null)
+    if (tempStrings[2] != <"Command Description: <0>", ReturnDesc(currPage[selectedIndex])>)
+    {
+        tempStrings[2] = <"Command Description: <0>", ReturnDesc(currPage[selectedIndex])>;
+        Wait(0.1);
+        LoopIfConditionIsTrue();
+    }
+
+rule: "Update Command Desc"
+    Event.OngoingPlayer
+    if (menuOpen)
+    if (selectedCMD != null)
+    if (tempStrings[2] != <"Command Description: <0>", ReturnDesc(selectedCMD)>)
+    {
+        tempStrings[2] = <"Command Description: <0>", ReturnDesc(selectedCMD)>;
+        Wait(0.1);
+        LoopIfConditionIsTrue();
+    }

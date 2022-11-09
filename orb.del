@@ -1,0 +1,109 @@
+import "baseMenu.del";
+playervar define orbEnts;
+//[0] - Sphere
+//[1] - Beam
+//[2] - Orb Execution List
+//[3] - Orb Player Info
+//[4] - Controls
+playervar define orbTarget;
+playervar define heldInfo;
+//[0] - Target
+define RaycastingPos(define accept, define exclude, define rangeLims, define startPos): RayCastHitPosition(startPos, Destination(startPos, FacingDirectionOf(), rangeLims), accept, exclude, false);
+define LookingAtPlayer(define accept, define exclude, define rangeLims): RayCastHitPlayer(EyePosition(), Destination(EyePosition(), FacingDirectionOf(), rangeLims), accept, exclude, false);
+define Parametric(define x, define y, define z, define r, define a): Vector((r * CosineFromDegrees(a)) + x, y, (r * SineFromDegrees(a)) + z);
+define ParametricEasy(define vec, define r, define a): Vector((r * CosineFromDegrees(a)) + XOf(vec), YOf(vec), (r * SineFromDegrees(a)) + ZOf(vec));
+
+rule: "Create Orb"
+    Event.OngoingPlayer
+    if (ReturnBool("Admin Orb", EventPlayer()))
+    {
+        CreateBeamEffect(AllPlayers(), BeamType.GoodBeam, ParametricEasy(EyePosition(EventPlayer()) + Vector(0, 1.5, 1.8), 1.5, 0), RaycastingPos(AllPlayers(), EventPlayer(), 15, EyePosition(EventPlayer())), Color.Blue, EffectRev.VisibleToPositionAndRadius);
+        orbEnts[1] = LastCreatedEntity();
+        CreateHudText(EventPlayer(),
+        null,
+        <" \n \n \n [Orb Target Stats] \n <0> \n Ultimate Charge: <1> \n <2> ", <"Player: <0> \n Hero: <1> \n Health: <2>", orbTarget, <"<0> <1>", HeroOf(orbTarget), HeroIconString(HeroOf(orbTarget))>, Health(orbTarget)>, UltimateChargePercent(orbTarget), <"Cooldown 1: <0> \n Cooldown 2: <1> \n Secondary Cooldown: <2>", AbilityCooldown(orbTarget, Button.Ability1), AbilityCooldown(orbTarget, Button.Ability2), AbilityCooldown(orbTarget, Button.SecondaryFire)>>,
+        null,
+        Location.Right,
+        3,
+        Color.White,
+        Color.White,
+        Color.White,
+        HudTextRev.String,
+        Spectators.DefaultVisibility);
+        orbEnts[3] = LastTextID();
+        CreateHudText(EventPlayer(),
+        null,
+        <"[Orb Controls] Hold Secondary Fire - Pickup & Drag Player \n <0>", "Press Ability 2 - Throw held player">,
+        null,
+        Location.Right,
+        1,
+        Color.White,
+        Color.White,
+        Color.White,
+        HudTextRev.String,
+        Spectators.DefaultVisibility);
+        orbEnts[4] = LastTextID();
+    }
+
+
+rule: "Destroy Orb"
+    Event.OngoingPlayer
+    if (!ReturnBool("Admin Orb", EventPlayer()) || role == "User")
+    {
+        DestroyEffect(orbEnts[0]);
+        DestroyEffect(orbEnts[1]);
+        DestroyHudText(orbEnts[2]);
+        DestroyHudText(orbEnts[3]);
+        DestroyHudText(orbEnts[4]);
+    }
+
+
+
+rule: "Update Orb Target"
+    Event.OngoingPlayer
+    if (LookingAtPlayer(AllPlayers(), EventPlayer(), 15) !=  orbTarget)
+    if (!isExecuting)
+    if (heldInfo[0] == null)
+    {
+        orbTarget = LookingAtPlayer(AllPlayers(), EventPlayer(), 15);
+    }
+
+
+rule: "Grab Target"
+    Event.OngoingPlayer
+    if (ReturnBool("Admin Orb", EventPlayer()))
+    if (!menuOpen)
+    if (IsButtonHeld(EventPlayer(), Button.SecondaryFire))
+    if (orbTarget == LookingAtPlayer(AllPlayers(), EventPlayer(), 15))
+    if (orbTarget != null)
+    if (heldInfo[0] == null)
+    {
+        heldInfo[0] = orbTarget;
+        StartForcingPlayerPosition(heldInfo[0], RaycastingPos(AllPlayers(), EventPlayer(), 15, EyePosition(EventPlayer())), true);
+    }
+
+
+rule: "Drop Target"
+    Event.OngoingPlayer
+    if (IsTrueForAny(
+        [((ReturnBool("Admin Orb", EventPlayer())) == false && (heldInfo[0] != null)),
+        ((heldInfo[0] != null) && (!IsButtonHeld(EventPlayer(), Button.SecondaryFire))),
+        ((heldInfo[0] != null) && menuOpen),
+        (EntityExists(heldInfo[0]) == false)]
+    , ArrayElement() == true))
+    {
+        StopForcingPlayerPosition(heldInfo[0]);
+        heldInfo[0] = null;
+    }
+
+rule: "Throw Target"
+    Event.OngoingPlayer
+    if (ReturnBool("Admin Orb", EventPlayer()))
+    if (!menuOpen)
+    if (heldInfo[0] != null)
+    if (IsButtonHeld(EventPlayer(), Button.Ability2))
+    {
+        StopForcingPlayerPosition(heldInfo[0]);
+        ApplyImpulse(heldInfo[0], FacingDirectionOf(EventPlayer()), 60, Relative.ToWorld, ContraryMotion.Cancel);
+        heldInfo[0] = null;
+    }

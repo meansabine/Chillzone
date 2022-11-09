@@ -1,0 +1,24 @@
+
+import "baseMenu.del";
+playervar define pageIndex;
+playervar define pageCollection;
+playervar define currPage;
+playervar define selectionCursor;
+
+
+void PageSetup(define array) playervar "Page Setup"
+{
+    pageIndex = 0;
+    pageCollection = null;
+    pageCollection = [ArraySlice(array, 0, 10), ArraySlice(array, 10, 10), ArraySlice(array, 20, 10),ArraySlice(array, 30, 10), ArraySlice(array, 40, 10), ArraySlice(array, 50, 10), ArraySlice(array, 60, 10), ArraySlice(array, 70, 10)];
+    pageCollection = FilteredArray(pageCollection, StringLength(ArrayElement()) > 1);
+    selectionCursor = [">", " ", " ", " ", " ", " ", " ", " ", " ", " "];
+    if (CountOf(RemoveFromArray(pageCollection[CountOf(pageCollection) - 1], null)) < 10)
+    {
+        pageCollection[CountOf(pageCollection) - 1] = Append(RemoveFromArray(pageCollection[CountOf(pageCollection) - 1], null), ArraySlice([" ", " ", " ", " ", " ", " ", " ", " ", " "], 0, 10 - CountOf(RemoveFromArray(pageCollection[CountOf(pageCollection) - 1], null))));
+    }
+    currPage = pageCollection[pageIndex];
+}
+
+
+define TrueCount(define array): CountOf(RemoveFromArray(array, " "));

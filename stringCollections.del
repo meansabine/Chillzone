@@ -1,0 +1,228 @@
+import "baseMenu.del";
+globalvar define statusArray !;
+globalvar define keyWords !;
+globalvar define comLines !;
+globalvar define version !;
+
+globalvar define menuStrings !;
+
+globalvar define toggableCommands;
+globalvar define statusCommands;
+
+globalvar define modelAttributeArray;
+globalvar define modelAttributeOrder;
+
+
+
+rule: "Setup String Collections"
+    Event.OngoingGlobal
+    {
+        comLines = ["Emote Up", "Emote Right", "Emote Down", "Emote Left", "Voice Up", "Voice Right", "Voice Down", "Voice Left", "Ultimate Status", "Hello", "Need Healing", "Group Up", "Thanks", "Understood", "Push The Attack", "You're Welcome", "Yes", "No", "Goodbye", "Go", "Ready", "Push Forward", "Fall Back", "Incoming", "With You", "Going In", "On My Way", "Attacking", "Defending", "Need Help", "Countdown", "Sorry"];
+        adminCMDS = ["Kill Player", "Bring Player", "Set Player's Status", "Clear Player's Status", "Toggle Menu Access", "Loop Kill Player", "Explode Player", "Set Player Damage Power",
+        "Jail Player", "Blind Player", "Set Player Ultimate Charge", "Set Player Max HP", "Damage Player", "Heal Player", "Reverse Player Controls", "Set Player Ability Cooldown",
+        "Console", "Admin Orb", "Force Command", "Poison Player", "Spawn Lock Player", "Set Player Aim Speed", "Spin Player", "Match Time Paused", "Set Match Time", "Set Player Health", "Shake Player", "Puppet Player", "One Shot One Kill"];
+        userCMDS = ["Teleport To", "Thirdperson", "Resize Self", "Resize Shield", "Rainbow", "Set Character Voice Pitch", "Kill Self", "Set Speed", "Invisible", "Respawn", "Select Hero", "Set Projectile Speed", "Teleport Outside Map", "Set Gravity", "Invincibility", "Set Self Status",
+        "Clear Self Status", "Set Projectile Gravity", "Instant Ultimate", "Noclip", "Bunny Jumps", "Infinite Jump", "Spam Abilities", "Aimbot", "Teleport Shoot", "Portal", "Ghost", "Add Health Pools", "Set Jump Vertical Power", "Remove All Health Pools", "Set Self Health", "Jump Pad",
+        "Coord Display", "Super Punch", "No Cooldowns", "Instant Resurrection", "Zipline Creation Mode", "Destroy All Personal Ziplines", "Fixed Camera"];
+        ownerCMDS = ["Add Admin", "Remove Admin", "Time Bend", "Server Load HUD"];
+
+        //secret commands hehe
+        if (CurrentMap() == Map.Paraiso)
+        {
+            userCMDS[CountOf(userCMDS)] = "BEACH";
+        }
+
+
+        statusArray = ["Hacked", "Burning", "Knocked Down", "Asleep", "Frozen", "Unkillable", "Invincible", "Phased Out", "Rooted", "Stunned"];
+        keyWords = ["Player", "Array", "Num", "Bool"];
+
+
+
+
+        paramReturn = [["Teleport To", ["Player"]],
+        ["Kill Self", null],
+        ["Set Speed", ["Num", [0,2500]]],
+        ["Select Hero", ["Array", AllHeroes()]],
+        ["Set Player's Status", ["Player", "Array", statusArray, "Num", [0, 1000]]],
+        ["Add Admin", ["Array", "ReevalArray1"]],
+        ["Remove Admin", ["Array", "ReevalArray1"]],
+        ["Respawn", null],
+        ["Set Projectile Speed", ["Num", [0, 1000]]],
+        ["Teleport Outside Map", null],
+        ["Set Gravity", ["Num", [0, 1000]]],
+        ["Set Self Status", ["Array", statusArray, "Num", [0,1000]]],
+        ["Set Projectile Gravity", ["Num", [0, 1000]]],
+        ["Clear Self Status", ["Array", statusArray]],
+        ["Kill Player", ["Player"]],
+        ["Bring Player", ["Player"]],
+        ["Clear Player's Status", ["Player", "Array", statusArray]],
+        ["Toggle Menu Access", ["Player", "Bool"]],
+        ["Loop Kill Player", ["Player", "Bool"]],
+        ["Explode Player", ["Player"]],
+        ["Set Player Damage Power", ["Player", "Num", [0, 1000]]],
+        ["Jail Player", ["Player", "Bool"]],
+        ["Blind Player", ["Player", "Bool"]],
+        ["Set Player Ultimate Charge", ["Player", "Num", [0,100]]],
+        ["Set Player Max HP", ["Player", "Num", [1, 1000]]],
+        ["Damage Player", ["Player", "Num", [1, 2000]]],
+        ["Heal Player", ["Player", "Num", [1, 2000]]],
+        ["Reverse Player Controls", ["Player", "Bool"]],
+        ["Set Player Ability Cooldown", ["Player", "Array", ["Ability 1", "Ability 2", "Secondary Fire"], "Num", [-650, 650]]],
+        ["Communicate Player", ["Player", "Array", comLines]],
+        ["Invisible", ["Bool"]],
+        ["Invincibility", ["Bool"]],
+        ["Instant Ultimate", ["Bool"]],
+        ["Noclip", ["Bool"]],
+        ["Bunny Jumps", ["Bool"]],
+        ["Infinite Jump", ["Bool"]],
+        ["Console", ["Bool"]],
+        ["Admin Orb", ["Bool"]],
+        ["Spam Abilities", ["Bool"]],
+        ["Force Command", ["Player", "Array", userCMDS]],
+        ["Aimbot", ["Bool"]],
+        ["Poison Player", ["Player", "Num", [0, 100]]],
+        ["Teleport Shoot", ["Bool"]],
+        ["Spawn Lock Player", ["Player", "Bool"]],
+        ["Set Player Aim Speed", ["Player", "Num", [0,500]]],
+        ["Spin Player", ["Player", "Bool"]],
+        ["Rainbow", ["Bool"]],
+        ["Set Match Time", ["Num", [0, 10000]]],
+        ["Match Time Paused", ["Bool"]],
+        ["Time Bend", ["Num", [1,100]]],
+        ["Portal", ["Array", ["Portal 1", "Portal 2", "Destroy Portals"]]],
+        ["Resize Self", ["Num", [10, 1000]]],
+        ["Thirdperson", ["Bool"]],
+        ["Set Character Voice Pitch", ["Num", [1, 400]]],
+        ["Resize Shield", ["Num", [1, 400]]],
+        ["Ghost", ["Bool"]],
+        ["Add Health Pools", ["Array", ["Add Shield", "Add Armor", "Add Health"], "Num", [0, 4000]]],
+        ["Set Jump Vertical Power", ["Num", [0, 1000]]],
+        ["Set Self Health", ["Num", [0, 1500]]],
+        ["Set Player Health", ["Player", "Num", [0, 1500]]],
+        ["Remove All Health Pools", null],
+        ["Watch Player", ["Player"]],
+        ["Jump Pad", ["Array", ["Create/Place Jump Pad", "Remove Jump Pad"]]],
+        ["Shake Player", ["Player", "Bool"]],
+        ["Coord Display", ["Bool"]],
+        ["BEACH", null],
+        ["Super Punch", ["Bool", "Num", [25, 10000]]],
+        ["Server Load HUD", ["Bool"]],
+        ["No Cooldowns", ["Bool"]],
+        ["Instant Resurrection", ["Bool"]],
+        ["Puppet Player", ["Bool", "Player"]],
+        ["One Shot One Kill", ["Bool"]],
+        ["Zipline Creation Mode", ["Bool"]],
+        ["Destroy All Personal Ziplines", null],
+        ["Fixed Camera", ["Bool"]]];
+        //NOTE: Rework player to change based on PlayerPool
+
+
+
+
+        toggableCommands = ["Ghost", "Invisible", "Invincibility", "Instant Ultimate", "Noclip", "Bunny Jumps", "Infinite Jump", "Console", "Admin Orb", "Spam Abilities",
+        "Aimbot", "Teleport Shoot", "Rainbow", "Thirdperson", "Coord Display", "Super Punch", "Server Load HUD", "No Cooldowns", "Instant Resurrection", "Puppet Player", "One Shot One Kill",
+        "Zipline Creation Mode", "Fixed Camera"];
+
+        statusCommands = ["Loop Kill Player", "Jail Player", "Blind Player", "Reverse Player Controls", "Spawn Lock Player", "Spin Player", "Shake Player"];
+
+        modelAttributeArray = [["Blind Player", "Effect1", ""],
+        ["Jail Player", "Effect1", "", "Pos1", ""],
+        ["Set Character Voice Pitch", "Num1", "100"],
+        ["Server Load HUD", "Hud1" , ""],
+        ["Puppet Player", "Puppet1", ""],
+        ["Super Punch", "Knockback1"]];
+        modelAttributeOrder = ["Blind Player", "Jail Player", "Set Character Voice Pitch", "Server Load HUD", "Puppet Player", "Super Punch"];
+
+
+
+
+
+
+
+        explanationReturn = [["Teleport To", "Teleport to a selected player"],
+        ["Kill Self", "Really self-explanatory"],
+        ["Set Speed", "Set your own speed to a percent"],
+        ["Select Hero", "Select your hero outside of spawn"],
+        ["Set Player's Status", "Set player's CC status! Ex: Stunned"],
+        ["Add Admin", "Give player access to admin commands"],
+        ["Remove Admin", "Revokes player's admin access"],
+        ["Respawn", "Respawns self"],
+        ["Set Projectile Speed", "Set how fast your projectiles move"],
+        ["Teleport Outside Map", "Teleports Outside of Skybox"],
+        ["Set Gravity", "Set your own gravity"],
+        ["Set Self Status", "Set your own CC status! Ex: Frozen"],
+        ["Set Projectile Gravity", "Set your own projectile gravity"],
+        ["Clear Self Status", "Removes CC status from self"],
+        ["Kill Player", "Kills selected player, regardless of invincibility"],
+        ["Bring Player", "Teleports the selected player to your position"],
+        ["Clear Player's Status", "Removes CC status from player"],
+        ["Toggle Menu Access", "Turn On/Off a players menu access"],
+        ["Loop Kill Player", "Repeadetly Kill Player"],
+        ["Explode Player", "Fancy kill command!"],
+        ["Set Player Damage Power", "Sets a player's damage power"],
+        ["Jail Player", "Lock a player in a small room [On/Off]"],
+        ["Blind Player", "Removes sight from selected player [On/Off]"],
+        ["Set Player Ultimate Charge", "Sets a player's ultimate charge"],
+        ["Set Player Max HP", "Sets a player's max health"],
+        ["Damage Player", "Damage player for specified amount"],
+        ["Heal Player", "Heals player for specified amount"],
+        ["Reverse Player Controls", "Reverse players controls [On/Off]"],
+        ["Set Player Ability Cooldown", "Set a players ability cooldown"],
+        ["Communicate Player", "Forces a player to use communication comms"],
+        ["Invisible", "Self Explanatory- go invisible [On/Off]"],
+        ["Invincibility", "God mode! [On/Off"],
+        ["Instant Ultimate", "Instantly regain ult after use [On/Off]"],
+        ["Noclip", "Move through walls [On/Off]"],
+        ["Bunny Jumps", "Won't let you touch the ground! [On/Off]"],
+        ["Infinite Jump", "You can hold jump and fly! [On/Off]"],
+        ["Console", "View executed commands from everyone in lobby [On/Off]"],
+        ["Admin Orb", "Pickup/Throw player with orb. Also bind commands to orb [On/Off]"],
+        ["Spam Abilities", "Hold reload to spam punch! Hold Ability 1 to spam abilities(only McCree/Ana)[On/Off]"],
+        ["Force Command", "Force a player to execute a command"],
+        ["Aimbot", "An aimbot that can be used while holding Ability 2 out of menu[On/Off]"],
+        ["Poison Player", "Poisons a player with specified amount of damage per second"],
+        ["Teleport Shoot", "Teleport to your aim pos when you shoot [On/Off]"],
+        ["Spawn Lock Player", "Lock a player in spawn [On/Off]"],
+        ["Set Player Aim Speed", "Self-explanatory..."],
+        ["Spin Player", "Spins a player constantly [On/Off]"],
+        ["Rainbow", "Creates a rainbow on yourself! **Epilepsy warning!!!** [On/Off]"],
+        ["Set Match Time", "Set the match time(in seconds)"],
+        ["Match Time Paused", "Pauses match time On/Off"],
+        ["Time Bend", "Allows the slowing of time!"],
+        ["Portal", "Create and manage your own personal portals!"],
+        ["Resize Self", "Grow or shrink yourself! You choose!"],
+        ["Thirdperson", "Set yourself to Thirdperson! [On/Off]"],
+        ["Set Character Voice Pitch", "Change your characters voice!"],
+        ["Resize Shield", "Resizes your characters shield(if they have one!)"],
+        ["Ghost", "Enable your ability to walk through walls! [On/Off]"],
+        ["Add Health Pools", "Add to your armor/shields/health."],
+        ["Set Jump Vertical Power", "Set the height at which you jump."],
+        ["Set Self Health", "Set your own health."],
+        ["Set Player Health", "Set another players health."],
+        ["Watch Player", "Keep an eye out while sitting comfortably"],
+        ["Jump Pad", "Create/Manage your own pad!"],
+        ["Shake Player", "Shakes a players screen uncontrollably [On/Off]"],
+        ["Coord Display", "Create a HUD to display your coords! [On/Off]"],
+        ["BEACH", "SECRET COMMAND! LETS GO TO THE BEACH BEACH!"],
+        ["Super Punch", "Ever wanted to deck someone flying? Try this! [On/Off]"],
+        ["Server Load HUD", "Displays server load stats [On/Off]"],
+        ["No Cooldowns", "Turn off cooldowns for self [On/Off]"],
+        ["Instant Resurrection", "Resurrect automatically when you die [On/Off]"],
+        ["Puppet Player", "Make players mimic your walking and looking [On/Off]"],
+        ["One Shot One Kill", "Need I say more? [On/Off]"],
+        ["Remove All Health Pools", "Removes the current extra health pools on self."],
+        ["Destroy All Personal Ziplines", "Removes all of your personal ziplines"],
+        ["Zipline Creation Mode", "Enables the Zipline Creation Mode [On/Off]"],
+        ["Fixed Camera", "Fixes the camera to be stuck in one location [On/Off]"]];
+
+
+
+
+
+        for (define i = 0; i < CountOf(statusCommands); i++)
+            {
+                cmdStatusTemplate[i] = [statusCommands[i], false];
+            }
+        
+        superPeople = [<"sabine">];
+    }

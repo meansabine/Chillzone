@@ -1,0 +1,95 @@
+import "baseMenu.del";
+playervar define camPerson !;
+void StatusSet(define args !) //translates command into a block
+{
+    switch (args[1])
+    {
+        case "Hacked": SetStatus(args[0], EventPlayer(), Status.Hacked, args[2]); break;
+        case "Burning": SetStatus(args[0], EventPlayer(), Status.Burning, args[2]); break;
+        case "Knocked Down": SetStatus(args[0], EventPlayer(), Status.KnockedDown, args[2]); break;
+        case "Asleep": SetStatus(args[0], EventPlayer(), Status.Asleep, args[2]); break;
+        case "Frozen": SetStatus(args[0], EventPlayer(), Status.Frozen, args[2]); break;
+        case "Unkillable": SetStatus(args[0], EventPlayer(), Status.Unkillable, args[2]); break;
+        case "Invincible": SetStatus(args[0], EventPlayer(), Status.Invincible, args[2]); break;
+        case "Phased Out": SetStatus(args[0], EventPlayer(), Status.PhasedOut, args[2]); break;
+        case "Rooted": SetStatus(args[0], EventPlayer(), Status.Rooted, args[2]); break;
+        case "Stunned": SetStatus(args[0], EventPlayer(), Status.Stunned, args[2]); break;
+    }
+}
+
+
+void HealthPoolParse(define pool !, define int !)
+{
+    switch (pool)
+    {
+        case "Add Armor": AddHealthPoolToPlayer(EventPlayer(), HealthType.Armor, int, true, false); break;
+        case "Add Shield": AddHealthPoolToPlayer(EventPlayer(), HealthType.Shields, int, true, false); break;
+        case "Add Health": AddHealthPoolToPlayer(EventPlayer(), HealthType.Health, int, true, false); break;
+    }
+}
+
+
+
+define ThirdpersonPos(define player): (((player + (WorldVectorOf(Vector(-0.300,0.500,-0.100), player) * player.scalar)) + (Up() * 1.5 * player.scalar)) + (FacingDirectionOf(player) * (-2.0 * (player.scalar / 1.25))));
+
+define ThirdpersonLook(define player): (player + (FacingDirectionOf(player) * 1000));
+
+
+void PlayerStatusClear(define status !, define player !) "PSC" //translates command into a block
+{
+    switch (status)
+    {
+        case "Hacked": ClearStatus(player, Status.Hacked); break;
+        case "Burning": ClearStatus(player, Status.Burning); break;
+        case "Knocked Down": ClearStatus(player, Status.KnockedDown); break;
+        case "Asleep": ClearStatus(player, Status.Asleep); break;
+        case "Frozen": ClearStatus(player, Status.Frozen); break;
+        case "Unkillable": ClearStatus(player, Status.Unkillable); break;
+        case "Invincible": ClearStatus(player, Status.Invincible); break;
+        case "Phased Out": ClearStatus(player, Status.PhasedOut); break;
+        case "Rooted": ClearStatus(player, Status.Rooted); break;
+        case "Stunned": ClearStatus(player, Status.Stunned); break;
+    }
+}
+define ReturnButton(define button !): [Button.Ability1, Button.Ability2, Button.SecondaryFire][IndexOfArrayValue(["Ability 1", "Ability 2", "Secondary Fire"], button)];
+
+
+void PlyCommunicate(define player !, define line !) "PC"
+{
+
+    switch (line)
+    {
+        case "Emote Up": Communicate(player, Communication.EmoteUp); break;
+        case "Emote Right": Communicate(player, Communication.EmoteRight); break;
+        case "Emote Down": Communicate(player, Communication.EmoteDown); break;
+        case "Emote Left": Communicate(player, Communication.EmoteLeft); break;
+        case "Voice Up": Communicate(player, Communication.VoiceLineUp); break;
+        case "Voice Right": Communicate(player, Communication.VoiceLineRight); break;
+        case "Voice Down": Communicate(player, Communication.VoiceLineDown); break;
+        case "Voice Left": Communicate(player, Communication.VoiceLineLeft); break;
+        case "Ultimate Status": Communicate(player, Communication.UltimateStatus); break;
+        case "Hello": Communicate(player, Communication.Hello); break;
+        case "Need Healing": Communicate(player, Communication.NeedHealing); break;
+        case "Group Up": Communicate(player, Communication.GroupUp); break;
+        case "Thanks": Communicate(player, Communication.Thanks); break;
+        case "Understood": Communicate(player, Communication.Acknowledge); break;
+        case "Push The Attack": Communicate(player, Communication.PressTheAttack); break;
+        case "You're Welcome": Communicate(player, Communication.YouAreWelcome); break;
+        case "Yes": Communicate(player, Communication.Yes); break;
+        case "No": Communicate(player, Communication.No); break;
+        case "Goodbye": Communicate(player, Communication.Goodbye); break;
+        case "Go": Communicate(player, Communication.Go); break;
+        case "Ready": Communicate(player, Communication.Ready); break;
+        case "Going": Communicate(player, Communication.GoingIn); break;
+        case "Push Forward": Communicate(player, Communication.PushForward); break;
+        case "Fall Back": Communicate(player, Communication.FallBack); break;
+        case "Incoming": Communicate(player, Communication.Incoming); break;
+        case "With You": Communicate(player, Communication.WithYou); break;
+        case "On My Way": Communicate(player, Communication.OnMyWay); break;
+        case "Attacking": Communicate(player, Communication.Attacking); break;
+        case "Defending": Communicate(player, Communication.Defending); break;
+        case "Need Help": Communicate(player, Communication.NeedHelp); break;
+        case "Sorry": Communicate(player, Communication.Sorry); break;
+        case "Countdown": Communicate(player, Communication.Countdown); break;
+    }
+}

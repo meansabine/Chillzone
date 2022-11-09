@@ -1,0 +1,142 @@
+import "baseMenu.del";
+globalvar define cmdStatusTemplate;
+globalvar define persistentStatuses;
+//[x][0] = player
+//[x][1] = array
+globalvar define persistentBools;
+//[x][0] = player
+//[x][1] = array
+playervar define cmdStatusArray; //personal status bools
+//[x][0] = cmd name
+//[x][1] = bool
+
+
+
+rule: "Loop Kill Players"
+    Event.OngoingGlobal
+    if (CountOf(FilteredArray(AllPlayers(), ArrayElement().cmdStatusArray[IndexOfArrayValue(statusCommands, "Loop Kill Player")][1])) != 0)
+    {
+        Kill(FilteredArray(AllPlayers(), ArrayElement().cmdStatusArray[IndexOfArrayValue(statusCommands, "Loop Kill Player")][1]), null);
+        Wait(0.5);
+        LoopIfConditionIsTrue();
+    }
+
+rule: "Spawn Locked"
+    Event.OngoingPlayer
+    if (ReturnStatus("Spawn Lock Player", EventPlayer()))
+    if (!IsInSpawnRoom())
+    {
+        Respawn(EventPlayer());
+        BigMessage(EventPlayer(), <"Locked in spawn!">);
+    }
+
+rule: "Rotate"
+    Event.OngoingPlayer
+    if (ReturnStatus("Spin Player", EventPlayer()))
+    {
+        StartFacing(EventPlayer(), DirectionTowards(EyePosition(EventPlayer()), ParametricEasy(PositionOf(), 90, standardAngle)), 1000, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+    }
+
+rule: "Stop Rotate"
+    Event.OngoingPlayer
+    if (!ReturnStatus("Spin Player", EventPlayer()))
+    {
+        StopFacing(EventPlayer());
+    }
+
+rule: "Jail On Player"
+    Event.OngoingPlayer
+    if (ReturnStatus("Jail Player", EventPlayer()))
+    {
+        
+        SetAttribute("Jail Player", EventPlayer(), "Pos1", NearestWalkablePosition(PositionOf()));
+        SetStatus(EventPlayer(), null, Status.Stunned, 3.5);
+        CreateEffect(AllPlayers(), Effect.LightShaft, Color.Red, RetrieveAttribute("Jail Player", EventPlayer(), "Pos1"), 4.5, EffectRev.VisibleTo);
+        SetAttribute("Jail Player", EventPlayer(), "Effect1", LastCreatedEntity());
+    }
+
+rule: "Jail Off Player"
+    Event.OngoingPlayer
+    if (!ReturnStatus("Jail Player", EventPlayer()))
+    {
+        DestroyEffect(RetrieveAttribute("Jail Player", EventPlayer(), "Effect1"));
+    }
+
+rule: "Blind On Player"
+    Event.OngoingPlayer
+    if (ReturnStatus("Blind Player", EventPlayer()))
+    {
+        CreateEffect(EventPlayer(), Effect.Sphere, Color.White, EventPlayer(), 25, EffectRev.None);
+        SetAttribute("Blind Player", EventPlayer(), "Effect1", LastCreatedEntity());
+    }
+
+rule: "Blind Off Player"
+    Event.OngoingPlayer
+    if (!ReturnStatus("Blind Player", EventPlayer()))
+    {
+        DestroyEffect(RetrieveAttribute("Blind Player", EventPlayer(), "Effect1"));
+    }
+
+rule: "Reverse Controls On"
+    Event.OngoingPlayer
+    if (ReturnStatus("Reverse Player Controls", EventPlayer()))
+    {
+        StartTransformingThrottle(EventPlayer(), -1, -1, FacingDirectionOf(EventPlayer()));
+    }
+
+rule: "Reverse Controls Off"
+    Event.OngoingPlayer
+    if (!ReturnStatus("Reverse Player Controls", EventPlayer()))
+    {
+        StopTransformingThrottle(EventPlayer());
+        StartTransformingThrottle(EventPlayer(), 1, 1, FacingDirectionOf(EventPlayer()));
+    }
+
+rule: "Player Exited Jail"
+    Event.OngoingPlayer
+    if (ReturnStatus("Jail Player", EventPlayer()))
+    if (DistanceBetween(RetrieveAttribute("Jail Player", EventPlayer(), "Pos1"), PositionOf(EventPlayer())) > 4.45)
+    {
+        Teleport(EventPlayer(), RetrieveAttribute("Jail Player", EventPlayer(), "Pos1"));
+        SetStatus(EventPlayer(), null, Status.Stunned, 1.5);
+        BigMessage(EventPlayer(), <"DO NOT LEAVE JAIL">);
+        Wait(0.5);
+        LoopIfConditionIsTrue();
+    }
+
+
+globalvar define earthquakeOffset;
+
+rule: "Earthquake Loop"
+    Event.OngoingGlobal
+    if (CountOf(FilteredArray(AllPlayers(), ReturnStatus("Shake Player", ArrayElement()))) != 0)
+    {
+        earthquakeOffset = Vector(RandomReal(1, 2.5) * 5, RandomReal(1, 2.5) * 5 * 0.25, RandomReal(1, 2.5) * 5);
+        Wait(0.019);
+        LoopIfConditionIsTrue();
+    }
+
+rule: "Start Shaking Screen"
+    Event.OngoingPlayer
+    if (ReturnStatus("Shake Player", EventPlayer()))
+    {
+        SetFacing(EventPlayer(), FacingDirectionOf() + earthquakeOffset, Relative.ToWorld);
+        Wait(0.019);
+        LoopIfConditionIsTrue();
+    }
+
+
+define ReturnStatus(define cmd !, define players !): players.cmdStatusArray[IndexOfArrayValue(statusCommands, cmd)][1];
+
+void SwitchStatus(define cmd !, define players !, define bool !) playervar  "Switch Status"
+{
+    players.cmdStatusArray[IndexOfArrayValue(statusCommands, cmd)][1] = bool;
+    // for (define i = 0; i < CountOf(boolArray); i++) // OR for (define i = 0; CountOf(AllPlayers()); 1)
+    // {
+    //     if (boolArray[i][0] == cmd)
+    //     {
+    //         boolArray[i][1] = bool;
+    //         Abort();
+    //     }
+    // }
+}

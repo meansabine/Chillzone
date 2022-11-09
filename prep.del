@@ -1,0 +1,76 @@
+import "baseMenu.del";
+globalvar define paramReturn;
+playervar define tempNum;
+globalvar define explanationReturn;
+
+globalvar define superPeople !;
+
+
+
+
+
+rule: "Global Preparation"
+    Event.OngoingGlobal
+    {
+        version = "1.5.2";
+        CreateHudText(AllPlayers(), null, <"v.<0>", version>, null, Location.Right, 4, Color.White, Color.White, Color.White, HudTextRev.VisibleTo, Spectators.DefaultVisibility);
+        CreateHudText(FilteredArray(AllPlayers(), ArrayElement().menuOpen), null, null, <" \n\n\n\n\n\n[Menu Navigation CONTROLS]\n <0> - Down \n <1> - Up \n <2> - Previous Page \n <3> - Next Page", InputBindingString(Button.PrimaryFire), InputBindingString(Button.SecondaryFire), InputBindingString(Button.Ability1), InputBindingString(Button.Ability2)>, Location.Left, 4, Color.White, Color.Rose, Color.White, HudTextRev.VisibleToAndString, Spectators.DefaultVisibility);
+        CreateHudText(FilteredArray(AllPlayers(), ArrayElement().menuOpen), null, null, <" HOLD <0> - Select/Input \n <1> - Back to main menu \n HOLD <2> - Close menu", InputBindingString(Button.Reload), InputBindingString(Button.Melee), InputBindingString(Button.Ultimate)>, Location.Left, 5, Color.White, Color.Rose, Color.White, HudTextRev.VisibleToAndString, Spectators.DefaultVisibility);
+        CreateHudText(FilteredArray(AllPlayers(), IsInSpawnRoom(ArrayElement()) && !ArrayElement().menuOpen), <"Welcome!">,  <" \n Welcome to <0>'s Server \n This server is Running Chillzone v.<1> \n PRESS INTERACT TO ACCESS MOD MENU! \n", HostPlayer(), version>, null, Location.Left, 0, Color.White, Color.White, Color.White, HudTextRev.VisibleToAndString, Spectators.DefaultVisibility);
+        consoleString = " ";
+    }
+
+rule: "Prep Player Menu"
+    Event.OngoingPlayer
+    if (menuEnt == null)
+    if (HasSpawned())
+    {
+        execString = " ";
+        CreateHudText(EventPlayer(),
+        null,
+        <"Chillzone by sabine">,
+        <"current role: <0> \n Press <1> to access mod menu", role, InputBindingString(Button.Interact)>,
+        Location.Top,
+        1,
+        Color.White,
+        Color.Rose,
+        Color.White,
+        HudTextRev.String,
+        Spectators.DefaultVisibility);
+        menuEnt = LastTextID();
+        Wait(0.08);
+        if (ArrayContains(superPeople, <"<0>", EventPlayer()>))
+        {
+            SmallMessage(EventPlayer(), <"Welcome <0>", EventPlayer()>);
+            SmallMessage(EventPlayer(), <"Sabine has hardcoded you as an owner, you're welcome!">);
+            SetRole(EventPlayer(), "Owner");
+        }
+        tempNum = 0;
+        for (define i = 0; i < CountOf(toggableCommands); i++) // OR for (define i = 0; CountOf(AllPlayers()); 1)
+            {
+                boolArray[i] = [toggableCommands[i], false];
+                Wait(0.08);
+            }
+        scalar = 1;
+        SetAttribute("Set Character Voice Pitch", EventPlayer(), "Num1", 1);
+        StartModifyingHeroVoiceLines(EventPlayer(), RetrieveAttribute("Set Character Voice Pitch", EventPlayer(), "Num1"), true);
+        menuAccessible = true;
+    }
+
+
+
+
+
+playervar define tempPlayer;
+rule: "On Leave"
+    Event.OnPlayerLeave
+    {
+        if (ReturnBool("Rainbow", EventPlayer()))
+        {
+             SwitchToggle("Rainbow", false);
+        }
+        DestroyPortal(0, EventPlayer());
+        DestroyPortal(1, EventPlayer());
+        
+
+    }
